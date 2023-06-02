@@ -5,11 +5,11 @@ import '../../styles/library.scss';
 const Library = () => {
     return (
         <Row>
-            <Col span={8}></Col>
-            <Col span={8} className="library-container">
+            <Col span={4}></Col>
+            <Col span={16} className="library-container">
                 <LibraryForm/>
             </Col>
-            <Col span={8}></Col>
+            <Col span={4}></Col>
         </Row>
     );
 };

@@ -1,8 +1,7 @@
 import react from 'react';
 import Layout, { Content, /* Footer, */ Header } from 'antd/es/layout/layout';
 import { Link, Outlet } from 'react-router-dom';
-import Sider from 'antd/es/layout/Sider';
-import { Image } from 'antd';
+import { Image, Row, Col } from 'antd';
 import '../styles/global.scss';
 
 const index = () => {
@@ -12,30 +11,30 @@ const index = () => {
         <Layout className="container">
             <Header className="header">
                 <Link to="/">
-                    <Image
-                        preview={false}
-                        width={30}
-                        src="public/logo.svg"
-                    />
+                    <Image preview={false} width={30} src="public/logo.svg" />
                 </Link>
-                <Link to="/shared-library">Select Locale in Shared library & Category data</Link>
+                <Link to="/shared-library">Select Locale in Shared library</Link>
             </Header>
-            <Layout hasSider>
-                <Sider>
-                    <Image
-                        preview={{ visible: false }}
-                        width={350}
-                        src="public/donate.JPG"
-                        onClick={() => setVisible(true)}
-                    />
-                    <div style={{ display: 'none' }}>
-                        <Image.PreviewGroup preview={{ visible, onVisibleChange: (vis) => setVisible(vis) }}>
-                            <Image src="public/donate.JPG" />
-                        </Image.PreviewGroup>
-                    </div>
-                </Sider>
+            <Layout>
                 <Content>
-                    <Outlet />
+                    <Row>
+                        <Col span={6}>
+                            <Image
+                                preview={{ visible: false }}
+                                width="auto"
+                                src="public/donate.JPG"
+                                onClick={() => setVisible(true)}
+                            />
+                            <div style={{ display: 'none' }}>
+                                <Image.PreviewGroup preview={{ visible, onVisibleChange: (vis) => setVisible(vis) }}>
+                                    <Image src="public/donate.JPG" />
+                                </Image.PreviewGroup>
+                            </div>
+                        </Col>
+                        <Col span={18} className="library-container">
+                            <Outlet />
+                        </Col>
+                    </Row>
                 </Content>
             </Layout>
             {/* <Footer className='footer'>

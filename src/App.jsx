@@ -1,7 +1,7 @@
 import { BrowserRouter } from 'react-router-dom';
 import Routes from './router';
 
-function App() {
+const App = () => {
   return (
     <div className="App">
       <BrowserRouter>

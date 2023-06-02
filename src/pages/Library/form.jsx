@@ -6,24 +6,24 @@ import { executeFile, removeExtraNewlines } from '../../helpers/xmlUtils';
 const LibraryForm = () => {
     const [fileList, setFileList] = useState([]);
     const [locales, setLocales] = useState([]);
-    const [selectedLocale, setSelectedLocale] = useState();
+    const [selectedLocale, setSelectedLocale] = useState('');
     const [fileName, setFileName] = useState('');
 
     const props = {
         onRemove: () => {
             setFileList([]);
             setLocales([]);
-            setSelectedLocale(undefined);
-            console.log(fileList)
+            setSelectedLocale('');
         },
         beforeUpload: (file) => {
             setFileList([file]);
 
             return false;
         },
-        onChange: () => {
+        onChange: (event) => {
             setLocales([]);
-            setSelectedLocale(undefined);
+            setSelectedLocale('');
+            if (!event.fileList?.length) return;
             executeFile(fileList, (contents) => {
                 let localeObject = {};
 
@@ -119,18 +119,13 @@ const LibraryForm = () => {
 
     return (
         <Form labelCol={{ span: 8 }} wrapperCol={{ span: 16 }}>
-            <div>
-                {
-                    locales
-                }
-            </div>
             <Form.Item label="Select XML file">
                 <Upload {...props}>
                     <Button icon={<UploadOutlined />}>Select File</Button>
                 </Upload>
             </Form.Item>
             <Form.Item label="Select locale">
-                <Select disabled={locales.length <= 0} onChange={handleSelectLocale}>
+                <Select disabled={locales.length <= 0} onChange={handleSelectLocale} value={selectedLocale}>
                     {locales.map((locale) => (
                         <Select.Option value={locale} key={locale} selected={locale === selectedLocale}>
                             {locale}
