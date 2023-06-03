@@ -4,22 +4,22 @@ export const removeExtraNewlines = (xml) => {
     return cleanedLines.join('\n');
 };
 
-export const executeFile = (fileList, callBack) => {
-    const file = fileList[0];
-    const reader = new FileReader();
+export const executeFile = async (fileList) =>
+    await new Promise((resolve) => {
+        const file = fileList[0];
+        const reader = new FileReader();
 
-    reader.onload = (event) => {
-        const xmlString = event?.target?.result || '';
+        reader.onload = (event) => {
+            const xmlString = event?.target?.result || '';
 
-        if (typeof xmlString !== 'string') return;
+            if (typeof xmlString !== 'string') return;
 
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
-        const root = xmlDoc.documentElement;
-        const contents = root.children;
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+            const root = xmlDoc.documentElement;
+            const contents = root.children;
+            return resolve([contents, root, xmlDoc]);
+        };
 
-        callBack(contents, root, xmlDoc);
-    };
-
-    reader.readAsText(file);
-};
+        reader.readAsText(file);
+    });
