@@ -9,7 +9,7 @@ export const children = [
     },
     {
         path: '/clone-code',
-        text: 'Clone code',
+        text: 'Clone code from Bitbucket',
         element: <CloneCode />
     }
 ];

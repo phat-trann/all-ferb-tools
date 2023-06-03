@@ -20,7 +20,7 @@ const LayoutComponent = () => {
                     <Image preview={false} width={30} src="public/logo.svg" />
                 </Link>
                 {children.map((link) => (
-                    <NavLink to={link.path} key={link.path} className={({ isActive }) => isActive && 'active'}>
+                    <NavLink to={link.path} key={link.path} className={({ isActive }) => (isActive ? 'active' : '')}>
                         {link.text}
                     </NavLink>
                 ))}
