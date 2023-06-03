@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import Layout, { Content, /* Footer, */ Header } from 'antd/es/layout/layout';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 import { Image, Row, Col } from 'antd';
 import '../styles/global.scss';
 import { useRecoilState } from 'recoil';
 import { loading } from '../store/atom';
 import LoadingComponent from '../components/Loading';
+import { children } from '../router/routerChild';
 
 const LayoutComponent = () => {
     const [visible, setVisible] = useState(false);
@@ -15,15 +16,19 @@ const LayoutComponent = () => {
         <Layout className="container">
             {loadingState && <LoadingComponent />}
             <Header className="header">
-                <Link to="/">
+                <Link to="/" className="avatar">
                     <Image preview={false} width={30} src="public/logo.svg" />
                 </Link>
-                <Link to="/shared-library">Select Locale in Shared library</Link>
+                {children.map((link) => (
+                    <NavLink to={link.path} key={link.path} className={({ isActive }) => isActive && 'active'}>
+                        {link.text}
+                    </NavLink>
+                ))}
             </Header>
             <Layout>
                 <Content>
                     <Row>
-                        <Col span={6}>
+                        <Col span={4}>
                             <Image
                                 preview={{ visible: false }}
                                 width="auto"
@@ -36,7 +41,7 @@ const LayoutComponent = () => {
                                 </Image.PreviewGroup>
                             </div>
                         </Col>
-                        <Col span={18} className="library-container">
+                        <Col span={20} className="library-container">
                             <Outlet />
                         </Col>
                     </Row>

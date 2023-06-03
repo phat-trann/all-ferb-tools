@@ -67,7 +67,7 @@ const LibraryForm = () => {
                     ))}
                 </Select>
             </Form.Item>
-            <Form.Item label="File name">
+            <Form.Item label="Output name">
                 <Input value={fileName} onChange={(e) => setFileName(e.target.value)} />
             </Form.Item>
             <Form.Item label="Button">
