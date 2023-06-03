@@ -23,4 +23,21 @@ body {
             }
         }
     }
+
+    .layout {
+        min-height: calc(100vh - 50px);
+
+        .donate {
+            margin: 1rem;
+        }
+    }
+
+    .library-container {
+        padding-top: 4rem;
+
+        .form-container {
+            width: 65rem;
+            margin: 0 auto;
+        }
+    }
 }

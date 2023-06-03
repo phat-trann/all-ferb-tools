@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Layout, { Content, /* Footer, */ Header } from 'antd/es/layout/layout';
 import { Link, NavLink, Outlet } from 'react-router-dom';
-import { Image, Row, Col } from 'antd';
+import { Image, Row, Col, Card } from 'antd';
 import '../styles/global.scss';
 import { useRecoilState } from 'recoil';
 import { loading } from '../store/atom';
@@ -25,21 +25,25 @@ const LayoutComponent = () => {
                     </NavLink>
                 ))}
             </Header>
-            <Layout>
+            <Layout className="layout">
                 <Content>
                     <Row>
                         <Col span={4}>
-                            <Image
-                                preview={{ visible: false }}
-                                width="auto"
-                                src="public/donate.JPG"
-                                onClick={() => setVisible(true)}
-                            />
-                            <div style={{ display: 'none' }}>
-                                <Image.PreviewGroup preview={{ visible, onVisibleChange: (vis) => setVisible(vis) }}>
-                                    <Image src="public/donate.JPG" />
-                                </Image.PreviewGroup>
-                            </div>
+                            <Card title="Cho bé thỏ ăn cỏ :>" className="donate">
+                                <Image
+                                    preview={{ visible: false }}
+                                    width="auto"
+                                    src="public/donate.JPG"
+                                    onClick={() => setVisible(true)}
+                                />
+                                <div style={{ display: 'none' }}>
+                                    <Image.PreviewGroup
+                                        preview={{ visible, onVisibleChange: (vis) => setVisible(vis) }}
+                                    >
+                                        <Image src="public/donate.JPG" />
+                                    </Image.PreviewGroup>
+                                </div>
+                            </Card>
                         </Col>
                         <Col span={20} className="library-container">
                             <Outlet />
