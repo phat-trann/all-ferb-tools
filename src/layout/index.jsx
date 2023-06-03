@@ -28,7 +28,7 @@ const LayoutComponent = () => {
             <Layout className="layout">
                 <Content>
                     <Row>
-                        <Col span={4}>
+                        <Col span={5}>
                             <Card title="Cho bé thỏ ăn cỏ :>" className="donate">
                                 <Image
                                     preview={{ visible: false }}
@@ -45,7 +45,7 @@ const LayoutComponent = () => {
                                 </div>
                             </Card>
                         </Col>
-                        <Col span={20} className="library-container">
+                        <Col span={19} className="library-container">
                             <Outlet />
                         </Col>
                     </Row>
