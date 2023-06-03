@@ -1,14 +1,19 @@
-import react from 'react';
+import { useState } from 'react';
 import Layout, { Content, /* Footer, */ Header } from 'antd/es/layout/layout';
 import { Link, Outlet } from 'react-router-dom';
 import { Image, Row, Col } from 'antd';
 import '../styles/global.scss';
+import { useRecoilState } from 'recoil';
+import { loading } from '../store/atom';
+import LoadingComponent from '../components/Loading';
 
-const index = () => {
-    const [visible, setVisible] = react.useState(false);
+const LayoutComponent = () => {
+    const [visible, setVisible] = useState(false);
+    const [loadingState] = useRecoilState(loading);
 
     return (
         <Layout className="container">
+            {loadingState && <LoadingComponent />}
             <Header className="header">
                 <Link to="/">
                     <Image preview={false} width={30} src="public/logo.svg" />
@@ -44,4 +49,4 @@ const index = () => {
     );
 };
 
-export default index;
+export default LayoutComponent;

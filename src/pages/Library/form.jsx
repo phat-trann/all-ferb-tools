@@ -4,12 +4,15 @@ import { Button, Form, Select, Upload, Input } from 'antd';
 import { executeFile } from '../../helpers/xmlUtils';
 import { getAllLocale, keepAllContentByLocale } from '../../helpers/xmlHelpers';
 import { downloadXMLfile } from '../../helpers/fileHelpers';
+import { useSetRecoilState } from 'recoil';
+import { loading } from '../../store/atom';
 
 const LibraryForm = () => {
     const [fileList, setFileList] = useState([]);
     const [locales, setLocales] = useState([]);
     const [selectedLocale, setSelectedLocale] = useState('');
     const [fileName, setFileName] = useState('');
+    const setLoadingState = useSetRecoilState(loading);
 
     const props = {
         onRemove: () => {
@@ -26,10 +29,12 @@ const LibraryForm = () => {
             setLocales([]);
             setSelectedLocale('');
             if (!event.fileList?.length) return;
+            setLoadingState(true);
             const [contents] = await executeFile(fileList);
             const allLocale = await getAllLocale(contents);
 
             setLocales(allLocale);
+            setLoadingState(false);
         },
         fileList
     };
@@ -39,9 +44,11 @@ const LibraryForm = () => {
     };
 
     const handleCreateNewFile = async () => {
+        setLoadingState(true);
         const [contents, root, xmlDoc] = await executeFile(fileList);
         keepAllContentByLocale(contents, root, selectedLocale);
         downloadXMLfile(xmlDoc, fileName);
+        setLoadingState(false);
     };
 
     return (
