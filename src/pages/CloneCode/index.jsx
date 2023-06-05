@@ -1,18 +1,21 @@
-import { getAllRepos, getAllWorkspaces } from '../../services/bitbucket';
+import { getAllBranches, getAllRepos, getAllWorkspaces } from '../../services/bitbucket';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Button, Card, Checkbox, Col, Form, Input, Modal, Row, Select, Space } from 'antd';
+import { Button, Card, Checkbox, Col, Dropdown, Form, Input, Modal, Row, Select, Space } from 'antd';
 import '../../styles/cloneCode.scss';
 import { useSetRecoilState } from 'recoil';
 import { loading } from '../../store/atom';
+import { DownOutlined } from '@ant-design/icons';
+import { downloadFile } from '../../helpers/fileHelpers';
 
 const CloneCode = () => {
-    const { /* handleSubmit, */ watch, control, setValue } = useForm();
+    const { watch, control, setValue } = useForm();
     const [authorizeError, setAuthorizeError] = useState(false);
     const [getRepoError, setGetRepoError] = useState(false);
     const setLoadingState = useSetRecoilState(loading);
     const [workspaces, setWorkspaces] = useState([]);
     const [repos, setRepos] = useState([]);
+    const [reposData, setReposData] = useState({});
     const [checkAll, setCheckAll] = useState(false);
     const [checkedList, setCheckedList] = useState([]);
 
@@ -23,6 +26,7 @@ const CloneCode = () => {
         setAuthorizeError(false);
         setGetRepoError(false);
         setRepos([]);
+        setCheckedList([]);
         try {
             const data = await getAllWorkspaces(watch('username'), watch('password'));
 
@@ -60,6 +64,7 @@ const CloneCode = () => {
         setLoadingState(true);
         setGetRepoError(false);
         setRepos([]);
+        setReposData({});
         try {
             let allRepos = [];
             let page = 1;
@@ -72,18 +77,23 @@ const CloneCode = () => {
             } while (apiData?.data?.next);
 
             if (allRepos?.length > 0) {
-                setRepos(
-                    allRepos.map((item) => {
-                        return {
-                            value: item?.name,
-                            link: item?.links?.html?.href,
-                            clone: {
-                                https: item?.links?.clone.find((el) => el.name === 'https')?.href || '',
-                                ssh: item?.links?.clone.find((el) => el.name === 'ssh')?.href || ''
-                            }
-                        };
-                    })
-                );
+                const repos = [];
+                const reposRawData = {};
+
+                allRepos.forEach((repo) => {
+                    reposRawData[repo?.name || 'error'] = {
+                        link: repo?.links?.html?.href,
+                        clone: {
+                            https: repo?.links?.clone.find((el) => el.name === 'https')?.href || '',
+                            ssh: repo?.links?.clone.find((el) => el.name === 'ssh')?.href || ''
+                        }
+                    };
+
+                    repos.push(repo?.name);
+                });
+
+                setReposData(reposRawData);
+                setRepos(repos);
             } else {
                 Modal.error({
                     title: 'Not found',
@@ -102,7 +112,7 @@ const CloneCode = () => {
     };
 
     const handleCheckAll = (e) => {
-        setCheckedList(e.target.checked ? repos.map((el) => el.value) : []);
+        setCheckedList(e.target.checked ? repos.map((el) => el) : []);
         setCheckAll(e.target.checked);
     };
 
@@ -111,7 +121,62 @@ const CloneCode = () => {
         setCheckAll(value.length === repos.length);
     };
 
-    console.log(repos);
+    const handleAfterSelect = async (method) => {
+        setLoadingState(true);
+        const specialRepoInfo = {};
+
+        await Promise.all(
+            checkedList.map(
+                async (cartridge) =>
+                    await getAllBranches(watch('username'), watch('password'), watch('workspace'), cartridge)
+            )
+        ).then((values) => {
+            values.forEach((getBranchRes) => {
+                const allBranches = getBranchRes?.data?.values;
+                const specialBranch = allBranches.find((getBranchRes) => getBranchRes.name.includes('3.3'));
+
+                if (specialBranch) {
+                    specialRepoInfo[allBranches?.[0]?.target?.repository?.name || 'error'] = specialBranch?.name;
+                }
+            });
+        });
+
+        const shData = checkedList
+            .map((el) => {
+                return (
+                    `echo "\\033[32mStart clone ${el} - ${method.toUpperCase()} ---- \\033[0m"\necho ""` +
+                    '\ngit clone ' +
+                    reposData?.[el]?.clone?.[method] +
+                    (specialRepoInfo?.[el] !== undefined
+                        ? `\ncd ${el}\ngit checkout ${specialRepoInfo?.[el]}\ncd ../`
+                        : '') +
+                    `\necho ""\necho "\\033[35mDONE: ${el}\\033[0m"\necho "----------------------------"`
+                );
+            })
+            .join('\n');
+
+        await downloadFile(shData, 'cloneCode.sh');
+        console.log(shData);
+        setLoadingState(false);
+    };
+
+    const handleCheckExisted = async () => {
+        setLoadingState(true);
+        const folderData = await window.showDirectoryPicker();
+        let notExistedFolder = [];
+
+        for (const folderName of repos) {
+            try {
+                await folderData.getDirectoryHandle(folderName);
+            } catch (error) {
+                notExistedFolder.push(folderName);
+            }
+        }
+
+        setCheckedList(notExistedFolder);
+        setCheckAll(notExistedFolder.length === repos.length);
+        setLoadingState(false);
+    };
 
     return (
         <Form labelCol={{ span: 4 }} wrapperCol={{ span: 20 }} className="form-container">
@@ -190,28 +255,66 @@ const CloneCode = () => {
                 </Card>
                 <Card
                     title={
-                        <Row>
+                        <Row justify="center" align="center">
                             <Col span={4}>
-                                <Checkbox
-                                    indeterminate={checkedList.length > 0 && checkedList.length < repos.length}
-                                    onChange={handleCheckAll}
-                                    checked={checkAll}
-                                >
-                                    {`Select all (${repos.length})`}
-                                </Checkbox>
+                                <Space>
+                                    <Checkbox
+                                        indeterminate={checkedList.length > 0 && checkedList.length < repos.length}
+                                        onChange={handleCheckAll}
+                                        checked={checkAll}
+                                    >
+                                        {`Select all (${checkedList.length || 0} | ${repos.length})`}
+                                    </Checkbox>
+                                </Space>
+                            </Col>
+                            <Col span={20}>
+                                <Row justify="end">
+                                    <Col>
+                                        <Space>
+                                            <Button
+                                                type="primary"
+                                                onClick={handleCheckExisted}
+                                                disabled={repos.length <= 0}
+                                            >
+                                                Check not existed
+                                            </Button>
+                                            <Dropdown
+                                                menu={{
+                                                    items: [
+                                                        {
+                                                            label: 'SSH',
+                                                            key: 'ssh'
+                                                        },
+                                                        {
+                                                            label: 'HTTPS',
+                                                            key: 'https'
+                                                        }
+                                                    ],
+                                                    onClick: ({ key }) => {
+                                                        handleAfterSelect(key);
+                                                    }
+                                                }}
+                                                disabled={repos.length <= 0 || checkedList.length <= 0}
+                                            >
+                                                <Button>
+                                                    <Space>
+                                                        Clone code
+                                                        <DownOutlined />
+                                                    </Space>
+                                                </Button>
+                                            </Dropdown>
+                                        </Space>
+                                    </Col>
+                                </Row>
                             </Col>
                         </Row>
                     }
                 >
                     <Checkbox.Group value={checkedList} onChange={handleCheckboxChange}>
                         <Row>
-                            {repos.map((item) => (
-                                <Col key={item.value} span={8}>
-                                    <Checkbox value={item.value}>
-                                        <a href={item.link} target="_blank" rel="noopener noreferrer">
-                                            {item.value}
-                                        </a>
-                                    </Checkbox>
+                            {repos.map((repo) => (
+                                <Col key={repo} span={8}>
+                                    <Checkbox value={repo}>{repo}</Checkbox>
                                 </Col>
                             ))}
                         </Row>

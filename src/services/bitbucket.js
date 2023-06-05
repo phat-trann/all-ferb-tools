@@ -17,8 +17,23 @@ export const getAllWorkspaces = async (username, password) => {
 };
 
 export const getAllRepos = async (username, password, workspace, page = 1) => {
-    return await axiosBitbucketCall(`https://api.bitbucket.org/2.0/repositories/${workspace}`, 'GET', username, password, {
-        pagelen: 100,
-        page
-    });
+    return await axiosBitbucketCall(
+        `https://api.bitbucket.org/2.0/repositories/${workspace}`,
+        'GET',
+        username,
+        password,
+        {
+            pagelen: 100,
+            page
+        }
+    );
+};
+
+export const getAllBranches = async (username, password, workspace, repoSlug) => {
+    return await axiosBitbucketCall(
+        `https://api.bitbucket.org/2.0/repositories/${workspace}/${repoSlug}/refs/branches/`,
+        'GET',
+        username,
+        password
+    );
 };
