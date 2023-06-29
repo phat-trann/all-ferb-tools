@@ -144,7 +144,7 @@ const CloneCode = () => {
         const shData = checkedList
             .map((el) => {
                 return (
-                    `echo "\\033[32mStart clone ${el} - ${method.toUpperCase()} ---- \\033[0m"\necho ""` +
+                    `echo "\\033[32mStart clone ${el} - Method: ${method.toUpperCase()} ---- \\033[0m"\necho ""` +
                     '\ngit clone ' +
                     reposData?.[el]?.clone?.[method] +
                     (specialRepoInfo?.[el] !== undefined
@@ -156,25 +156,35 @@ const CloneCode = () => {
             .join('\n');
 
         await downloadFile(shData, 'cloneCode.sh');
-        console.log(shData);
         setLoadingState(false);
     };
 
     const handleCheckExisted = async () => {
         setLoadingState(true);
-        const folderData = await window.showDirectoryPicker();
-        let notExistedFolder = [];
 
-        for (const folderName of repos) {
-            try {
-                await folderData.getDirectoryHandle(folderName);
-            } catch (error) {
-                notExistedFolder.push(folderName);
+        try {
+            const folderData = await window.showDirectoryPicker();
+            let notExistedFolder = [];
+
+            for (const folderName of repos) {
+                try {
+                    await folderData.getDirectoryHandle(folderName);
+                } catch (error) {
+                    notExistedFolder.push(folderName);
+                }
             }
+
+            setCheckedList(notExistedFolder);
+            setCheckAll(notExistedFolder.length === repos.length);
+        } catch (error) {
+            Modal.error({
+                title: error?.name || 'This is an error message',
+                content: error?.message || 'Something wrong!!'
+            });
+
+            console.dir(error)
         }
 
-        setCheckedList(notExistedFolder);
-        setCheckAll(notExistedFolder.length === repos.length);
         setLoadingState(false);
     };
 
@@ -276,7 +286,7 @@ const CloneCode = () => {
                                                 onClick={handleCheckExisted}
                                                 disabled={repos.length <= 0}
                                             >
-                                                Check not existed
+                                                Select not existed
                                             </Button>
                                             <Dropdown
                                                 menu={{
